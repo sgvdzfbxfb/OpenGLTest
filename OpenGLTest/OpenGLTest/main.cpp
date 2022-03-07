@@ -57,8 +57,8 @@ void processInput(GLFWwindow* window);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1500;
+const unsigned int SCR_HEIGHT = 900;
 
 //缩放参数
 float big = 0.6f;//放大
@@ -140,7 +140,13 @@ int main()
 	}
 	Shader lightingShader("./shader/1.colors.vert", "./shader/1.colors.frag");
 	setupVertices();
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
 
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
 	while (!glfwWindowShouldClose(window))
 	{
 		// per-frame time logic
@@ -151,12 +157,13 @@ int main()
 
 		processInput(window);
 
+
 		//线框图转换处理判断
 		if (line_flag == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		else glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		float timeControl = (float)glfwGetTime();//定义timeControl系统时间函数
 		float radius = 10.0f;
 		float camX = sin(timeControl) * radius;
@@ -191,18 +198,7 @@ int main()
 
 		lightingShader.setMat4("model", model);
 
-		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glEnableVertexAttribArray(0);
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glEnableVertexAttribArray(1);
-
-		glBindVertexArray(vao[0]);
-		//glBindVertexArray(VAO);
-		//glUseProgram(shaderProgram);
-		//glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 		glDrawArrays(GL_TRIANGLES, 0, myModel.getNumVertices());
 
