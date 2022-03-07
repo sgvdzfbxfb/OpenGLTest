@@ -15,45 +15,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="simple.cpp">
+    <None Include="packages.config" />
+    <None Include="shader\1.colors.frag">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Application.cpp">
+    </None>
+    <None Include="shader\1.colors.vert">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="glError.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MyApplication.cpp">
+    <ClCompile Include="ImportedModel.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
+    <ClCompile Include="glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="shader\shader.frag">
-      <Filter>源文件</Filter>
-    </None>
-    <None Include="shader\shader.vert">
-      <Filter>源文件</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Application.hpp">
+    <ClInclude Include="camera.h">
       <Filter>源文件</Filter>
     </ClInclude>
-    <ClInclude Include="glError.hpp">
+    <ClInclude Include="ImportedModel.h">
       <Filter>源文件</Filter>
     </ClInclude>
-    <ClInclude Include="MyApplication.hpp">
-      <Filter>源文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.hpp">
+    <ClInclude Include="shader.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>
