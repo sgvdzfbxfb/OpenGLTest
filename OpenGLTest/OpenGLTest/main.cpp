@@ -147,6 +147,9 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
+	lightingShader.use();
+	lightingShader.setVec3("objectColor", 0.6f, 0.84f, 0.85f);
+	lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 	while (!glfwWindowShouldClose(window))
 	{
 		// per-frame time logic
@@ -162,7 +165,7 @@ int main()
 		if (line_flag == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		else glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.0f, 0.5f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		float timeControl = (float)glfwGetTime();//定义timeControl系统时间函数
 		float radius = 10.0f;
@@ -170,10 +173,7 @@ int main()
 		float camZ = cos(timeControl) * radius;//设置X、Z轴随时间的三角函数，实现光源的旋转
 		glm::vec3 lightPos(camX, 0.0f, camZ);//设置光源三维向量的旋转
 		glm::vec3 lightPos_pro(-camX, 0.0f, -camZ);//设置光源三维向量的旋转
-
-		lightingShader.use();
-		lightingShader.setVec3("objectColor", 0.6f, 0.84f, 0.85f);
-		lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+		
 		lightingShader.setVec3("lightPos", lightPos);
 		lightingShader.setVec3("lightPos_pro", lightPos_pro);
 		lightingShader.setVec3("viewPos", camera.Position);
@@ -207,7 +207,6 @@ int main()
 	}
 
 	glfwTerminate();
-	std::cout << "ddd" << endl;
 	return 0;
 }
 
