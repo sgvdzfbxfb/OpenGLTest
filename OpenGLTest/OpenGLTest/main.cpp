@@ -147,9 +147,11 @@ int main()
 	lightingShader.use();
 	lightingShader.setVec3("objectColor", 0.6f, 0.84f, 0.85f);
 	lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+	lightingShader.setVec2("iResolution", glm::vec2((float)SCR_WIDTH, (float)SCR_HEIGHT));
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
+		lightingShader.setFloat("iTime", currentFrame);
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
