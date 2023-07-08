@@ -14,22 +14,33 @@ uniform vec3 lightColor;
 uniform vec3 viewPos;
 uniform vec3 objectColor;
 
+
+float saturate(float x)
+{
+    return max(0.0, min(1.0, x));
+}
+vec3 saturate(vec3 vx)
+{
+    return vec3(max(0.0, min(1.0, vx.x)), max(0.0, min(1.0, vx.y)), max(0.0, min(1.0, vx.z)));
+}
+float lerp(float a, float b, float t)
+{
+	return a * (1.0 - t) + b * t;
+}
+vec4 lerp(vec4 a, vec4 b, float t)
+{
+	return a * (1.0 - t) + b * t;
+}
+
 void main()
 {
     // ambient
     float ambientStrength = 0.12;
     vec3 ambient = ambientStrength * lightColor;
   	
-    // diffuse 
     vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(lightPos - FragPos);//入射方向
 	vec3 lightDir_pro = normalize(lightPos_pro - FragPos);//入射方向
-
-    float diff = max(dot(norm, lightDir), 0.0);
-	float diff_pro = max(dot(norm, lightDir_pro), 0.0);
-
-    vec3 diffuse = diff * lightColor;
-	vec3 diffuse_pro = diff_pro * lightColor;
 
 	// specular
 	float specularStrength = 0.5;
@@ -45,13 +56,26 @@ void main()
 
     //vec2 uv = gl_FragCoord.xy / iResolution;
     vec2 uv = Texture / iResolution;
-//	vec2 pos = (uv.xy-0.5);
-//	vec2 cir = ((pos.xy*pos.xy+sin(uv.x*18.0+iTime)/25.0*sin(uv.y*7.0+iTime*1.5)/1.0)+uv.x*sin(iTime)/16.0+uv.y*sin(iTime*1.2)/16.0);
-//	float circles = (sqrt(abs(cir.x+cir.y*0.5)*25.0)*5.0);
-//	vec4 cirColor = vec4(sin(circles*1.25+2.0) * 0.01,abs(sin(circles*1.0-1.0)-sin(circles)),abs(sin(circles)*1.0),1.0);
-//  vec3 result = (ambient + diffuse + specular + diffuse_pro + specular_pro) * cirColor.xyz;
-//  FragColor = vec4(result, 1.0);
 
-	vec3 lightPara = ambient + diffuse + specular + diffuse_pro + specular_pro;
-	FragColor = vec4(lightPara, 1.0) * texture(ourTexture, Texture);
+	//localPos
+	vec3 AdjustLocalPos = saturate(vec3(FragPos.x, FragPos.y, FragPos.z)).xyz + 0.4;
+
+	//Rim
+	float softRim = 1.0 - saturate(dot(normalize(viewDir), Normal));// calculate a soft fresnel based on the view direction and the normals of the object
+	float hardRim = round(softRim); // round it up for a harder edge
+
+	//Emission
+	vec4 _Color = vec4(100.0 / 255.0, 212.0 / 255.0, 238.0 / 255.0, 1);
+	float _RimBrightness = 2.0;
+	float _InnerRimOffSet = 2.5;
+	vec4 Emission = _Color * lerp(hardRim, softRim, saturate(AdjustLocalPos.x + AdjustLocalPos.y)) * _RimBrightness;	 // lerp the emission from the hard rim to the softer one, based on the position
+
+	float innerRim = _InnerRimOffSet + saturate(dot(normalize(viewDir), Normal));
+	//Albedo
+	vec4 _BottomColor = vec4(0.23, 0, 0.95, 1);
+	vec4 _TColor = vec4(0.0 / 255.0, 85.0 / 255.0, 144.0 / 255.0, 1);
+	float _Offset = 3.2;
+	vec4 Albedo = _Color * pow(innerRim, 0.7) * lerp(_BottomColor, _TColor, saturate(FragPos.y + _Offset)) + vec4(specular, 1.0) + vec4(specular_pro, 1.0);
+
+	FragColor = Emission + Albedo;
 } 
