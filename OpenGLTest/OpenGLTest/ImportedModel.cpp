@@ -12,16 +12,21 @@ ImportedModel::ImportedModel(const char *filePath) {
 	modelImporter.parseOBJ(filePath);//调用ModelImporter类的方法实现将点和法向按照顺序再存储
 	numVertices = modelImporter.getNumVertices();//获取顶点的个数
 	std::vector<float> verts = modelImporter.getVertices();//获取顶点
+	std::vector<float> textures = modelImporter.getTexUvs();//获取法向
 	std::vector<float> normals = modelImporter.getNormals();//获取法向
 
 	for (int i = 0; i < numVertices; i++) {//将点和法向加入点集和法向集
-		vertices.push_back(glm::vec3(verts[i*3], verts[i*3+1], verts[i*3+2]));
-		normalVecs.push_back(glm::vec3(normals[i*3], normals[i*3+1], normals[i*3+2]));
+		vertices.push_back(glm::vec3(verts[i * 3], verts[i * 3 + 1], verts[i * 3 + 2]));
+		normalVecs.push_back(glm::vec3(normals[i * 3], normals[i * 3 + 1], normals[i * 3 + 2]));
+	}
+	for (int i = 0; i < numVertices; i++) {//将点和法向加入点集和法向集
+		textureVecs.push_back(glm::vec2(textures[i * 2], textures[i * 2 + 1]));
 	}
 }
 //返回类中参数的各个函数
 int ImportedModel::getNumVertices() { return numVertices; }
 std::vector<glm::vec3> ImportedModel::getVertices() { return vertices; }
+std::vector<glm::vec2> ImportedModel::getTexures() { return textureVecs; }
 std::vector<glm::vec3> ImportedModel::getNormals() { return normalVecs; }
 
 // ---------------------------------------------------------------
@@ -43,6 +48,12 @@ void ModelImporter::parseOBJ(const char *filePath) {
 			vertVals.push_back(y);
 			vertVals.push_back(z);
 		}
+		if (line.compare(0, 2, "vt") == 0) {
+			stringstream ss(line.erase(0, 2));
+			ss >> x; ss >> y;
+			texUvVals.push_back(x);
+			texUvVals.push_back(y);
+		}
 		if (line.compare(0, 2, "vn") == 0) {
 			stringstream ss(line.erase(0, 2));
 			ss >> x; ss >> y; ss >> z;
@@ -61,11 +72,15 @@ void ModelImporter::parseOBJ(const char *filePath) {
 				getline(oneCornerSS, n, '/');
 				
 				int vertRef = (stoi(v) - 1) * 3;
+				int texRef = (stoi(t) - 1) * 2;
 				int normRef = (stoi(n) - 1) * 3;
 				
 				triangleVerts.push_back(vertVals[vertRef]);
 				triangleVerts.push_back(vertVals[vertRef + 1]);
 				triangleVerts.push_back(vertVals[vertRef + 2]);
+
+				texUvs.push_back(texUvVals[texRef]);
+				texUvs.push_back(texUvVals[texRef + 1]);
 
 				normals.push_back(normVals[normRef]);
 				normals.push_back(normVals[normRef + 1]);
@@ -77,4 +92,5 @@ void ModelImporter::parseOBJ(const char *filePath) {
 //获取参数的各个函数
 int ModelImporter::getNumVertices() { return (triangleVerts.size()/3); }
 std::vector<float> ModelImporter::getVertices() { return triangleVerts; }
+std::vector<float> ModelImporter::getTexUvs() { return texUvs; }
 std::vector<float> ModelImporter::getNormals() { return normals; }

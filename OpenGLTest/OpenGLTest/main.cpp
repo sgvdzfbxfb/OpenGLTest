@@ -10,6 +10,8 @@
 #include "ImportedModel.h"
 #include <fstream>
 #include <vector>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 using namespace std;
 
@@ -20,19 +22,23 @@ GLuint renderingProgram;
 GLuint vao[numVAOs];
 GLuint vbo[numVBOs];
 
-ImportedModel myModel("./obj/bunny.obj");
+ImportedModel myModel("./obj/spot.obj");
 
 void setupVertices(void) {
 	std::vector<glm::vec3> vert = myModel.getVertices();
 	std::vector<glm::vec3> norm = myModel.getNormals();
+	std::vector<glm::vec2> tex = myModel.getTexures();
 
 	std::vector<float> pvalues;
+	std::vector<float> tvalues;
 	std::vector<float> nvalues;
 
 	for (int i = 0; i < myModel.getNumVertices(); i++) {
 		pvalues.push_back((vert[i]).x);
 		pvalues.push_back((vert[i]).y);
 		pvalues.push_back((vert[i]).z);
+		tvalues.push_back((tex[i]).x);
+		tvalues.push_back((tex[i]).y);
 		nvalues.push_back((norm[i]).x);
 		nvalues.push_back((norm[i]).y);
 		nvalues.push_back((norm[i]).z);
@@ -48,11 +54,17 @@ void setupVertices(void) {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
 
-	// normal
+	// texture
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, nvalues.size() * 4, &nvalues[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBufferData(GL_ARRAY_BUFFER, tvalues.size() * 4, &tvalues[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
+
+	// normal
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+	glBufferData(GL_ARRAY_BUFFER, nvalues.size() * 4, &nvalues[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(2);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -116,7 +128,7 @@ int main()
 	// glfw用的版本，major为3 minor为3，所以版本为3.3
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);//告诉GLFW我们使用的是核心模式(Core-profile)
 
 	// 开启glfw窗口代码
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Test Window", NULL, NULL);
@@ -143,6 +155,33 @@ int main()
 	}
 	Shader lightingShader("./shader/1.colors.vert", "./shader/1.colors.frag");
 	setupVertices();
+
+	//第一个纹理
+	unsigned int texture;
+
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	//设置环绕
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//过滤方式
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//加载并生成纹理
+	int texWidth, texHeight, nrChannels;	//numberChannel:通道数
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* texData = stbi_load("./obj/spot_diffuse.png", &texWidth, &texHeight, &nrChannels, 0);
+	if (texData)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else cout << "Failed to load texture" << endl;
+	stbi_image_free(texData);
+
+	lightingShader.setInt("ourTexture", 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
 	
 	lightingShader.use();
 	lightingShader.setVec3("objectColor", 0.6f, 0.84f, 0.85f);

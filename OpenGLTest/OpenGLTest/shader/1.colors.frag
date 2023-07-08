@@ -1,10 +1,12 @@
 #version 330 core
 out vec4 FragColor;
 
+in vec2 Texture;
 in vec3 Normal;
 in vec3 FragPos;
 
 uniform float iTime;
+uniform sampler2D ourTexture;
 uniform vec2 iResolution;
 uniform vec3 lightPos;
 uniform vec3 lightPos_pro;
@@ -41,12 +43,15 @@ void main()
 	vec3 specular = specularStrength * lightColor * spec;
 	vec3 specular_pro = specularStrength * lightColor * spec_pro;
 
-    vec2 uv = gl_FragCoord.xy / iResolution;
-	vec2 pos = (uv.xy-0.5);
-	vec2 cir = ((pos.xy*pos.xy+sin(uv.x*18.0+iTime)/25.0*sin(uv.y*7.0+iTime*1.5)/1.0)+uv.x*sin(iTime)/16.0+uv.y*sin(iTime*1.2)/16.0);
-	float circles = (sqrt(abs(cir.x+cir.y*0.5)*25.0)*5.0);
-	vec4 cirColor = vec4(sin(circles*1.25+2.0) * 0.01,abs(sin(circles*1.0-1.0)-sin(circles)),abs(sin(circles)*1.0),1.0);
+    //vec2 uv = gl_FragCoord.xy / iResolution;
+    vec2 uv = Texture / iResolution;
+//	vec2 pos = (uv.xy-0.5);
+//	vec2 cir = ((pos.xy*pos.xy+sin(uv.x*18.0+iTime)/25.0*sin(uv.y*7.0+iTime*1.5)/1.0)+uv.x*sin(iTime)/16.0+uv.y*sin(iTime*1.2)/16.0);
+//	float circles = (sqrt(abs(cir.x+cir.y*0.5)*25.0)*5.0);
+//	vec4 cirColor = vec4(sin(circles*1.25+2.0) * 0.01,abs(sin(circles*1.0-1.0)-sin(circles)),abs(sin(circles)*1.0),1.0);
+//  vec3 result = (ambient + diffuse + specular + diffuse_pro + specular_pro) * cirColor.xyz;
+//  FragColor = vec4(result, 1.0);
 
-    vec3 result = (ambient + diffuse + specular + diffuse_pro + specular_pro) * cirColor.xyz;
-    FragColor = vec4(result, 1.0);
+	vec3 lightPara = ambient + diffuse + specular + diffuse_pro + specular_pro;
+	FragColor = vec4(lightPara, 1.0) * texture(ourTexture, Texture);
 } 
