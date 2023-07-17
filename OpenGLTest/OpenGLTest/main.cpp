@@ -15,16 +15,17 @@
 
 using namespace std;
 
-#define numVAOs 1
-#define numVBOs 3
+#define numVAOs 2
+#define numVBOs 6
 
 GLuint renderingProgram;
 GLuint vao[numVAOs];
 GLuint vbo[numVBOs];
 
 ImportedModel myModel("./obj/spot.obj");
+ImportedModel myModel2("./obj/diablo3.obj");
 
-void setupVertices(void) {
+void setupVertices(ImportedModel myModel, int mid) {
 	std::vector<glm::vec3> vert = myModel.getVertices();
 	std::vector<glm::vec3> norm = myModel.getNormals();
 	std::vector<glm::vec2> tex = myModel.getTexures();
@@ -43,25 +44,22 @@ void setupVertices(void) {
 		nvalues.push_back((norm[i]).y);
 		nvalues.push_back((norm[i]).z);
 	}
-
-	glGenVertexArrays(1, vao);
-	glBindVertexArray(vao[0]);
-	glGenBuffers(numVBOs, vbo);
+	glBindVertexArray(vao[mid]);
 
 	// position
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[mid * 3 + 0]);
 	glBufferData(GL_ARRAY_BUFFER, pvalues.size() * 4, &pvalues[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
 
 	// texture
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[mid * 3 + 1]);
 	glBufferData(GL_ARRAY_BUFFER, tvalues.size() * 4, &tvalues[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 
 	// normal
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[mid * 3 + 2]);
 	glBufferData(GL_ARRAY_BUFFER, nvalues.size() * 4, &nvalues[0], GL_STATIC_DRAW);
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(2);
@@ -154,35 +152,36 @@ int main()
 		return EXIT_FAILURE;
 	}
 	Shader lightingShader("./shader/1.colors.vert", "./shader/1.colors.frag");
-	setupVertices();
+	glGenVertexArrays(numVAOs, vao);
+	glGenBuffers(numVBOs, vbo);
+	setupVertices(myModel, 0);
+	setupVertices(myModel2, 1);
 
-	//第一个纹理
-	unsigned int texture;
+	////第一个纹理
+	//unsigned int texture;
+	//glGenTextures(1, &texture);
+	//glBindTexture(GL_TEXTURE_2D, texture);
+	////设置环绕
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	////过滤方式
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	////加载并生成纹理
+	//int texWidth, texHeight, nrChannels;	//numberChannel:通道数
+	//stbi_set_flip_vertically_on_load(true);
+	//unsigned char* texData = stbi_load("./obj/spot_diffuse.png", &texWidth, &texHeight, &nrChannels, 0);
+	//if (texData)
+	//{
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
+	//	glGenerateMipmap(GL_TEXTURE_2D);
+	//}
+	//else cout << "Failed to load texture" << endl;
+	//stbi_image_free(texData);
+	//lightingShader.setInt("ourTexture", 0);
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, texture);
 
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	//设置环绕
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//过滤方式
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//加载并生成纹理
-	int texWidth, texHeight, nrChannels;	//numberChannel:通道数
-	stbi_set_flip_vertically_on_load(true);
-	unsigned char* texData = stbi_load("./obj/spot_diffuse.png", &texWidth, &texHeight, &nrChannels, 0);
-	if (texData)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else cout << "Failed to load texture" << endl;
-	stbi_image_free(texData);
-
-	lightingShader.setInt("ourTexture", 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	
 	lightingShader.use();
 	lightingShader.setVec3("objectColor", 0.6f, 0.84f, 0.85f);
 	lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
@@ -208,7 +207,7 @@ int main()
 		float camZ = cos(timeControl) * radius;//设置X、Z轴随时间的三角函数，实现光源的旋转
 		glm::vec3 lightPos(camX, 0.0f, camZ);//设置光源三维向量的旋转
 		glm::vec3 lightPos_pro(-camX, 0.0f, -camZ);//设置光源三维向量的旋转
-		
+
 		lightingShader.setVec3("lightPos", lightPos);
 		lightingShader.setVec3("lightPos_pro", lightPos_pro);
 		lightingShader.setVec3("viewPos", camera.Position);
@@ -221,21 +220,29 @@ int main()
 
 		// world transformation
 		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 model2 = glm::mat4(1.0f);
 
 		//缩放
 		model = glm::scale(model, glm::vec3(big + small, big + small, big + small));
 		//平移
 		model = glm::translate(model, glm::vec3(left_right, up_down, front_back));
+		model2 = glm::translate(model, glm::vec3(0.5, 0.5, 0.5));
 		//旋转
 		model = glm::rotate(model, glm::radians(rotate_z), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(rotate_y), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(rotate_x), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		lightingShader.setMat4("model", model);
+		lightingShader.setMat4("model2", model2);
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
-		glDrawArrays(GL_TRIANGLES, 0, myModel.getNumVertices());
+		glBindVertexArray(vao[0]);
+		//glDrawArrays(GL_TRIANGLES, 0, myModel.getNumVertices());
+		glDrawArraysInstanced(GL_TRIANGLES, 0, myModel.getNumVertices(), 1);
+		glBindVertexArray(vao[1]);
+		//glDrawArrays(GL_TRIANGLES, 0, myModel2.getNumVertices());
+		glDrawArraysInstanced(GL_TRIANGLES, 0, myModel2.getNumVertices(), 2);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

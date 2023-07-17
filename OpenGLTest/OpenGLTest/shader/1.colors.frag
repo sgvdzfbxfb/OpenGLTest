@@ -65,16 +65,18 @@ void main()
 	float hardRim = round(softRim); // round it up for a harder edge
 
 	//Emission
-	vec4 _Color = vec4(100.0 / 255.0, 212.0 / 255.0, 238.0 / 255.0, 1);
+	vec4 _Color = vec4(100.0 / 255.0, 212.0 / 255.0, 238.0 / 255.0, 1);// 正蔚蓝色
 	float _RimBrightness = 2.0;
 	float _InnerRimOffSet = 2.5;
 	vec4 Emission = _Color * lerp(hardRim, softRim, saturate(AdjustLocalPos.x + AdjustLocalPos.y)) * _RimBrightness;	 // lerp the emission from the hard rim to the softer one, based on the position
 
 	float innerRim = _InnerRimOffSet + saturate(dot(normalize(viewDir), Normal));
 	//Albedo
-	vec4 _BottomColor = vec4(0.23, 0, 0.95, 1);
-	vec4 _TColor = vec4(0.0 / 255.0, 85.0 / 255.0, 144.0 / 255.0, 1);
+	vec4 _BottomColor = vec4(58.6 / 255.0, 0.0 / 255.0, 242.0 / 255.0, 1);// 紫色
+	vec4 _TColor = vec4(0.0 / 255.0, 85.0 / 255.0, 144.0 / 255.0, 1);// 深蓝色
 	float _Offset = 3.2;
+	// pow加上0.7次方，可以让里面的inner深颜色范围更少，更浅一点
+	// _BottomColor基本上没有用到
 	vec4 Albedo = _Color * pow(innerRim, 0.7) * lerp(_BottomColor, _TColor, saturate(FragPos.y + _Offset)) + vec4(specular, 1.0) + vec4(specular_pro, 1.0);
 
 	FragColor = Emission + Albedo;
