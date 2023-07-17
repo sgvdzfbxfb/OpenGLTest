@@ -152,6 +152,7 @@ int main()
 		return EXIT_FAILURE;
 	}
 	Shader lightingShader("./shader/1.colors.vert", "./shader/1.colors.frag");
+	Shader lightingShader2("./shader/2.colors.vert", "./shader/2.colors.frag");
 	glGenVertexArrays(numVAOs, vao);
 	glGenBuffers(numVBOs, vbo);
 	setupVertices(myModel, 0);
@@ -181,18 +182,9 @@ int main()
 	//lightingShader.setInt("ourTexture", 0);
 	//glActiveTexture(GL_TEXTURE0);
 	//glBindTexture(GL_TEXTURE_2D, texture);
-
-	lightingShader.use();
-	lightingShader.setVec3("objectColor", 0.6f, 0.84f, 0.85f);
-	lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-	lightingShader.setVec2("iResolution", glm::vec2((float)SCR_WIDTH, (float)SCR_HEIGHT));
+	
 	while (!glfwWindowShouldClose(window))
 	{
-		float currentFrame = glfwGetTime();
-		lightingShader.setFloat("iTime", currentFrame);
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-
 		processInput(window);
 
 		//线框图转换处理判断
@@ -201,48 +193,65 @@ int main()
 
 		glClearColor(0.0f, 0.5f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		float timeControl = (float)glfwGetTime();//定义timeControl系统时间函数
+
+		// 第1个物体的shader使用和参数设置，先使用再设置，顺序不能反
+		lightingShader.use();
+		float timeControl = (float)glfwGetTime();
+		lightingShader.setFloat("iTime", timeControl);
+		deltaTime = timeControl - lastFrame;
+		lastFrame = timeControl;
+		timeControl = (float)glfwGetTime();//定义timeControl系统时间函数
 		float radius = 10.0f;
 		float camX = sin(timeControl) * radius;
 		float camZ = cos(timeControl) * radius;//设置X、Z轴随时间的三角函数，实现光源的旋转
 		glm::vec3 lightPos(camX, 0.0f, camZ);//设置光源三维向量的旋转
 		glm::vec3 lightPos_pro(-camX, 0.0f, -camZ);//设置光源三维向量的旋转
-
+		lightingShader.setVec3("objectColor", 0.6f, 0.84f, 0.85f);
+		lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+		lightingShader.setVec2("iResolution", glm::vec2((float)SCR_WIDTH, (float)SCR_HEIGHT));
 		lightingShader.setVec3("lightPos", lightPos);
 		lightingShader.setVec3("lightPos_pro", lightPos_pro);
 		lightingShader.setVec3("viewPos", camera.Position);
-
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		lightingShader.setMat4("projection", projection);
 		lightingShader.setMat4("view", view);
-
 		// world transformation
 		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 model2 = glm::mat4(1.0f);
-
 		//缩放
 		model = glm::scale(model, glm::vec3(big + small, big + small, big + small));
 		//平移
 		model = glm::translate(model, glm::vec3(left_right, up_down, front_back));
-		model2 = glm::translate(model, glm::vec3(0.5, 0.5, 0.5));
 		//旋转
 		model = glm::rotate(model, glm::radians(rotate_z), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(rotate_y), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(rotate_x), glm::vec3(0.0f, 0.0f, 1.0f));
-
 		lightingShader.setMat4("model", model);
-		lightingShader.setMat4("model2", model2);
+		glBindVertexArray(vao[0]);
+		glDrawArrays(GL_TRIANGLES, 0, myModel.getNumVertices());
+		//glDrawArraysInstanced(GL_TRIANGLES, 0, myModel.getNumVertices(), 1);
+
+
+		// 第2个物体的shader使用和参数设置，先使用再设置，顺序不能反
+		lightingShader2.use();
+		timeControl = (float)glfwGetTime();
+		lightingShader2.setFloat("iTime", timeControl);
+		lightingShader2.setVec3("objectColor", 0.6f, 0.84f, 0.85f);
+		lightingShader2.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+		lightingShader2.setVec2("iResolution", glm::vec2((float)SCR_WIDTH, (float)SCR_HEIGHT));
+		lightingShader2.setVec3("lightPos", lightPos);
+		lightingShader2.setVec3("lightPos_pro", lightPos_pro);
+		lightingShader2.setVec3("viewPos", camera.Position);
+		lightingShader2.setMat4("projection", projection);
+		lightingShader2.setMat4("view", view);
+		lightingShader2.setMat4("model2", model);
+		glBindVertexArray(vao[1]);
+		glDrawArrays(GL_TRIANGLES, 0, myModel2.getNumVertices());
+		//glDrawArraysInstanced(GL_TRIANGLES, 0, myModel2.getNumVertices(), 2);
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
-		glBindVertexArray(vao[0]);
-		//glDrawArrays(GL_TRIANGLES, 0, myModel.getNumVertices());
-		glDrawArraysInstanced(GL_TRIANGLES, 0, myModel.getNumVertices(), 1);
-		glBindVertexArray(vao[1]);
-		//glDrawArrays(GL_TRIANGLES, 0, myModel2.getNumVertices());
-		glDrawArraysInstanced(GL_TRIANGLES, 0, myModel2.getNumVertices(), 2);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

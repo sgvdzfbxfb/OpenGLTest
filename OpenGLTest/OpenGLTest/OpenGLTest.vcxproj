@@ -154,6 +154,8 @@
     <None Include="packages.config" />
     <None Include="shader\1.colors.frag" />
     <None Include="shader\1.colors.vert" />
+    <None Include="shader\2.colors.frag" />
+    <None Include="shader\2.colors.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c" />
