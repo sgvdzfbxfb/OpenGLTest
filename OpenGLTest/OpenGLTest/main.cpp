@@ -245,7 +245,9 @@ int main()
 		lightingShader2.setVec3("viewPos", camera.Position);
 		lightingShader2.setMat4("projection", projection);
 		lightingShader2.setMat4("view", view);
-		lightingShader2.setMat4("model2", model);
+		glm::mat4 model2 = glm::mat4(1.0f);
+		model2 = glm::translate(model2, glm::vec3(0.5, 0.5, 0.5));
+		lightingShader2.setMat4("model2", model2);
 		glBindVertexArray(vao[1]);
 		glDrawArrays(GL_TRIANGLES, 0, myModel2.getNumVertices());
 		//glDrawArraysInstanced(GL_TRIANGLES, 0, myModel2.getNumVertices(), 2);
