@@ -1,5 +1,4 @@
 #version 330 core
-out vec4 FragColor;
 
 in vec2 Texture;
 in vec3 Normal;
@@ -79,5 +78,5 @@ void main()
 	// _BottomColor基本上没有用到
 	vec4 Albedo = _Color * pow(innerRim, 0.7) * lerp(_BottomColor, _TColor, saturate(FragPos.y + _Offset)) + vec4(specular, 1.0) + vec4(specular_pro, 1.0);
 
-	FragColor = Emission + Albedo;
+	gl_FragColor = Emission + Albedo;
 } 

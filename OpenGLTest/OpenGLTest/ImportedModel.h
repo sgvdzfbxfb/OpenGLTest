@@ -14,6 +14,7 @@ public:
 	std::vector<glm::vec3> getVertices();//返回顶点集vertices的函数
 	std::vector<glm::vec2> getTexures();
 	std::vector<glm::vec3> getNormals();//返回法向集normalVecs的函数
+	void tansformModel(glm::vec3 trans);
 };
 
 class ModelImporter

@@ -155,6 +155,9 @@ int main()
 	Shader lightingShader2("./shader/2.colors.vert", "./shader/2.colors.frag");
 	glGenVertexArrays(numVAOs, vao);
 	glGenBuffers(numVBOs, vbo);
+
+	myModel.tansformModel(glm::vec3(1.5, 0, 0));
+	myModel2.tansformModel(glm::vec3(-1.5, 0, 0));
 	setupVertices(myModel, 0);
 	setupVertices(myModel2, 1);
 

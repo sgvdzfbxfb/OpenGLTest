@@ -29,6 +29,13 @@ std::vector<glm::vec3> ImportedModel::getVertices() { return vertices; }
 std::vector<glm::vec2> ImportedModel::getTexures() { return textureVecs; }
 std::vector<glm::vec3> ImportedModel::getNormals() { return normalVecs; }
 
+void ImportedModel::tansformModel(glm::vec3 trans)
+{
+	for (auto& item : vertices) {
+		item += trans;
+	}
+}
+
 // ---------------------------------------------------------------
 
 ModelImporter::ModelImporter() {}
